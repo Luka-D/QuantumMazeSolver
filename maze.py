@@ -1,13 +1,16 @@
 import time
 import os
+from queue import Queue
+from operator import itemgetter
 import numpy as np
 import random
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation
-from queue import Queue
-from operator import itemgetter
+from dotenv import load_dotenv
+import qiskit
+from qiskit_ibm_runtime import QiskitRuntimeService
 
-# Thanks to Michael Gold @ https://medium.com/@msgold/using-python-to-create-and-solve-mazes-672285723c96 for the code
+load_dotenv()
 
 
 maze = [
@@ -22,6 +25,8 @@ maze = [
 ]
 
 maze = np.array(maze)
+
+# Thanks to Michael Gold @ https://medium.com/@msgold/using-python-to-create-and-solve-mazes-672285723c96 for the code
 
 
 def BFS_alogirithm(maze, start_point, end_point):
@@ -134,6 +139,25 @@ def print_maze(maze):
 
 
 if __name__ == "__main__":
+    # Qiskit init
+    if os.getenv("Qiskit_API_Token"):
+        print("API Token Successfully Loaded")
+    else:
+        raise Exception(
+            "Qiskit API Token not found. Please verify it is correctly declared in your .env file."
+        )
+
+    try:
+        print("Establishing connection")
+        service = QiskitRuntimeService(
+            channel="ibm_quantum",
+            token=os.getenv("Qiskit_API_Token"),
+        )
+    except Exception as e:
+        print(e)
+    backend = service.backend(name="ibm_brisbane")
+    print(backend.num_qubits)
+
     # Create optimal solution and save the procedure used for the solution using the BFS Algorithm
     start_point = (0, 1)
     end_point = (7, 1)
