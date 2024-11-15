@@ -166,9 +166,17 @@ print(final_score[0][0])
 plot_histogram(counts)
 
 
-def visualize_lights_out_grid(grid, *args):
+def visualize_lights_out_grid_to_console(grid):
+    """
+    This function prints out the lights-out grid to the console in a nice format.
+
+    Args:
+        grid (list of int): A list of integers each representing one square in the lights-out grid and
+                            whether it is on or off.
+    """
     rows = []
     root = int(math.sqrt(len(grid)))
+
     # Chunk the list into sub lists based on each row
     chunked_grid = [grid[x : x + root] for x in range(0, len(grid), root)]
 
@@ -184,9 +192,24 @@ def visualize_lights_out_grid(grid, *args):
 
     # Print final result split by rows to make it looks nice
     print(*rows, sep="\n")
+    print("\n")
 
 
 def visualize_solution(grid, solution):
+    """
+    This function receives the lights-out grid and
+    the solution to the grid that was generated from the quantum circuit.
+    It then applies the solution to the grid by going through each step and flipping the squares appropriately.
+
+    Args:
+        grid (list of int): A list of integers each representing one square in the lights-out grid and
+                            whether it is on or off.
+        solution (string): The sequence of events to be followed to turn the whole grid off. This solution
+                           is obtained from the Qiskit code.
+
+    Returns:
+        None
+    """
     # Find square root of the length of the grid
     root = int(math.sqrt(len(grid)))
 
@@ -204,8 +227,7 @@ def visualize_solution(grid, solution):
             return square
 
     # Visualize the grid the first time before operations
-    visualize_lights_out_grid(grid)
-    print("\n")
+    visualize_lights_out_grid_to_console(grid)
 
     for index, step in enumerate(solution):
         if step == 1:
@@ -243,8 +265,7 @@ def visualize_solution(grid, solution):
                     grid[index + 1] = switch(grid[index + 1])
                 except:
                     pass
-            visualize_lights_out_grid(grid)
-            print("\n")
+            visualize_lights_out_grid_to_console(grid)
     # Solution Two
     # if index in (0, 3, 6):
     #     pos = 0
