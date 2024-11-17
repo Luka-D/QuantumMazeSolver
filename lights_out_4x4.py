@@ -6,6 +6,7 @@ import time
 
 # Qiskit imports
 from qiskit import QuantumCircuit, ClassicalRegister, QuantumRegister, transpile
+from qiskit.providers.fake_provider import GenericBackendV2
 from qiskit.visualization import plot_histogram
 from dotenv import load_dotenv
 from qiskit.providers.basic_provider import BasicSimulator
@@ -19,7 +20,7 @@ from qiskit.visualization import plot_histogram
 # import neopixel_spi as neopixel
 
 # Array containing the initial lights out grid values
-lights = [0, 1, 1, 1, 0, 0, 1, 1, 1]
+lights = [0, 1, 1, 1, 0, 0, 1, 1, 1, 0, 1, 0, 1, 1, 0, 0]
 
 # Dictionary that corelates the grid index to an index on the LED array (Centered in the LED array)
 LED_array_indices = {
@@ -50,12 +51,12 @@ def compute_quantum_solution(lights):
                                 If a square is 1, it must be pressed to solved the grid.
     """
     # Initialize quantum circuit board
-    tile = QuantumRegister(9)
-    flip = QuantumRegister(9)
+    tile = QuantumRegister(16)
+    flip = QuantumRegister(16)
     oracle = QuantumRegister(1)
-    auxiliary = QuantumRegister(1)
-    result = ClassicalRegister(9)
-    # 20 qubit
+    auxiliary = QuantumRegister(15)
+    result = ClassicalRegister(16)
+
     qc = QuantumCircuit(tile, flip, oracle, auxiliary, result)
 
     def map_board(lights, qc, qr):
@@ -68,118 +69,119 @@ def compute_quantum_solution(lights):
                 j += 1
 
     # Initialize
-    def initialize_smart(l, qc, tile):
-        map_board(l, qc, tile)
-        qc.h(flip[:3])
+    def initialize():
+        map_board(lights, qc, tile)
+
+        qc.h(flip[0:17])
         qc.x(oracle[0])
         qc.h(oracle[0])
 
-    def flip_1(qc, flip, tile):
-        # push 0
+    # Subroutine for oracle
+    # Calculate what the light state will be after pressing each solution candidate.
+    def flip_tile(qc, flip, tile):
         qc.cx(flip[0], tile[0])
         qc.cx(flip[0], tile[1])
-        qc.cx(flip[0], tile[3])
-        # push 1
+        qc.cx(flip[0], tile[4])
         qc.cx(flip[1], tile[0])
         qc.cx(flip[1], tile[1])
         qc.cx(flip[1], tile[2])
-        qc.cx(flip[1], tile[4])
-        # push 2
+        qc.cx(flip[1], tile[5])
         qc.cx(flip[2], tile[1])
         qc.cx(flip[2], tile[2])
-        qc.cx(flip[2], tile[5])
-
-    def inv_1(qc, flip, tile):
-        # copy 0,1,2
-        qc.cx(tile[0], flip[3])
-        qc.cx(tile[1], flip[4])
-        qc.cx(tile[2], flip[5])
-
-    def flip_2(qc, flip, tile):
-        # apply flip[3,4,5]
-        qc.cx(flip[3], tile[0])
+        qc.cx(flip[2], tile[6])
+        qc.cx(flip[2], tile[3])
+        qc.cx(flip[3], tile[2])
         qc.cx(flip[3], tile[3])
-        qc.cx(flip[3], tile[4])
-        qc.cx(flip[3], tile[6])
-        qc.cx(flip[4], tile[1])
-        qc.cx(flip[4], tile[3])
+        qc.cx(flip[3], tile[7])
+        qc.cx(flip[4], tile[0])
         qc.cx(flip[4], tile[4])
         qc.cx(flip[4], tile[5])
-        qc.cx(flip[4], tile[7])
-        qc.cx(flip[5], tile[2])
+        qc.cx(flip[4], tile[8])
+        qc.cx(flip[5], tile[1])
         qc.cx(flip[5], tile[4])
         qc.cx(flip[5], tile[5])
-        qc.cx(flip[5], tile[8])
-
-    def inv_2(qc, flip, tile1):
-        # copy 3,4,5
-        qc.cx(tile[3], flip[6])
-        qc.cx(tile[4], flip[7])
-        qc.cx(tile[5], flip[8])
-
-    def flip_3(qc, flip, tile):
-        qc.cx(flip[6], tile[3])
+        qc.cx(flip[5], tile[6])
+        qc.cx(flip[5], tile[9])
+        qc.cx(flip[6], tile[2])
+        qc.cx(flip[6], tile[5])
         qc.cx(flip[6], tile[6])
         qc.cx(flip[6], tile[7])
-        qc.cx(flip[7], tile[4])
+        qc.cx(flip[6], tile[10])
+        qc.cx(flip[7], tile[3])
         qc.cx(flip[7], tile[6])
         qc.cx(flip[7], tile[7])
-        qc.cx(flip[7], tile[8])
-        qc.cx(flip[8], tile[5])
-        qc.cx(flip[8], tile[7])
+        qc.cx(flip[7], tile[11])
+        qc.cx(flip[8], tile[4])
         qc.cx(flip[8], tile[8])
+        qc.cx(flip[8], tile[9])
+        qc.cx(flip[8], tile[12])
+        qc.cx(flip[9], tile[5])
+        qc.cx(flip[9], tile[8])
+        qc.cx(flip[9], tile[9])
+        qc.cx(flip[9], tile[10])
+        qc.cx(flip[9], tile[13])
+        qc.cx(flip[10], tile[6])
+        qc.cx(flip[10], tile[9])
+        qc.cx(flip[10], tile[10])
+        qc.cx(flip[10], tile[11])
+        qc.cx(flip[10], tile[14])
+        qc.cx(flip[11], tile[7])
+        qc.cx(flip[11], tile[10])
+        qc.cx(flip[11], tile[11])
+        qc.cx(flip[11], tile[15])
+        qc.cx(flip[12], tile[8])
+        qc.cx(flip[12], tile[12])
+        qc.cx(flip[12], tile[13])
+        qc.cx(flip[13], tile[9])
+        qc.cx(flip[13], tile[12])
+        qc.cx(flip[13], tile[13])
+        qc.cx(flip[13], tile[14])
+        qc.cx(flip[14], tile[10])
+        qc.cx(flip[14], tile[13])
+        qc.cx(flip[14], tile[14])
+        qc.cx(flip[14], tile[15])
+        qc.cx(flip[15], tile[11])
+        qc.cx(flip[15], tile[14])
+        qc.cx(flip[15], tile[15])
 
     def lights_out_oracle(qc, tile, oracle, auxiliary):
-        qc.x(tile[6:9])
-        qc.mcx(tile[6:9], oracle[0], auxiliary, mode="basic")
-        qc.x(tile[6:9])
+        qc.x(tile[0:16])
+        qc.mcx(tile[0:16], oracle[0], auxiliary[0:14], mode="basic")
+        qc.x(tile[0:16])
 
-    def diffusion(qc, flip):
-        qc.h(flip[:3])
-        qc.x(flip[:3])
-        qc.h(flip[2])
-        qc.ccx(flip[0], flip[1], flip[2])
-        qc.h(flip[2])
-        qc.x(flip[:3])
-        qc.h(flip[:3])
+    def diffusion(qc, flip, auxiliary):
+        qc.h(flip)
+        qc.x(flip)
+        qc.h(flip[15])
+        qc.mcx(flip[0:15], flip[15], auxiliary[0:14], mode="basic")
+        qc.h(flip[15])
+        qc.x(flip)
+        qc.h(flip)
 
-    initialize_smart(lights, qc, tile)
+    initialize()
 
-    for i in range(2):
-        flip_1(qc, flip, tile)
-        inv_1(qc, flip, tile)
-        flip_2(qc, flip, tile)
-        inv_2(qc, flip, tile)
-        flip_3(qc, flip, tile)
-
+    for i in range(17):
+        # oracle
+        flip_tile(qc, flip, tile)
         lights_out_oracle(qc, tile, oracle, auxiliary)
 
-        flip_3(qc, flip, tile)
-        inv_2(qc, flip, tile)
-        flip_2(qc, flip, tile)
-        inv_1(qc, flip, tile)
-        flip_1(qc, flip, tile)
+        # Diffusion
+        flip_tile(qc, flip, tile)
+        diffusion(qc, flip, auxiliary)
 
-        diffusion(qc, flip)
-
+    print("uncompute")
     # Uncompute
     qc.h(oracle[0])
     qc.x(oracle[0])
 
-    # get the whole solution from the top row of the solution
-    # If you get a solution, you don't need to erase the board, so you don't need the flip_3 function.
-    flip_1(qc, flip, tile)
-    inv_1(qc, flip, tile)
-    flip_2(qc, flip, tile)
-    inv_2(qc, flip, tile)
-
-    # Measuremnt
+    # Measurment
     qc.measure(flip, result)
 
     # Make the Out put order the same as the input.
     qc = qc.reverse_bits()
 
-    backend = AerSimulator()
+    print("Backend simulation")
+    backend = AerSimulator(method="matrix_product_state")
     transpiled_qc = transpile(qc, backend=backend)
     result = backend.run(transpiled_qc, shots=5000).result()
     counts = result.get_counts()
@@ -292,7 +294,7 @@ def visualize_solution(grid, solution):
             return square
 
     # Visualize the grid the first time before operations
-    visualize_lights_out_grid_to_LED(grid)
+    visualize_lights_out_grid_to_console(grid)
 
     for index, step in enumerate(solution):
         if step == 1:
@@ -330,25 +332,11 @@ def visualize_solution(grid, solution):
                     grid[index + 1] = switch(grid[index + 1])
                 except:
                     pass
-            visualize_lights_out_grid_to_LED(grid)
-    # Solution Two
-    # if index in (0, 3, 6):
-    #     pos = 0
-    # elif index in (1, 4, 7):
-    #     pos = 1
-    # elif index in (2, 5, 8):
-    #     pos = 2
-    # # print(int(math.sqrt(len(grid))) / (index + 1))
-    # if step == 1:
-    #     print(sub_index, pos)
-    #     print(chunked_grid[sub_index][pos])
-    #     chunked_grid[sub_index][pos] = switch(chunked_grid[sub_index][pos])
-    #     visualize_lights_out_grid(chunked_grid)
-    # if pos == (root - 1):
-    #     sub_index += 1
+            visualize_lights_out_grid_to_console(grid)
 
 
 # visualize_lights_out_grid(lights)
 if __name__ == "__main__":
     quantum_solution = compute_quantum_solution(lights)
+    print(quantum_solution)
     visualize_solution(lights, quantum_solution)
