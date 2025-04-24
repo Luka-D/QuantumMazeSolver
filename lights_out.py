@@ -22,16 +22,18 @@ from qiskit.visualization import plot_histogram
 lights = [0, 1, 1, 1, 0, 0, 1, 1, 1]
 
 # Dictionary that corelates the grid index to an index on the LED array (Centered in the LED array)
+# 1,9 - 1,14
+# 6,9 - 6,14
 LED_array_indices = {
-    0: 12,
-    1: 13,
-    2: 14,
-    3: 22,
-    4: 23,
-    5: 24,
-    6: 32,
-    7: 33,
-    8: 34,
+    0: [(1, 9), (1, 10), (2, 9), (2, 10)],
+    1: [(1, 11), (1, 12), (2, 11), (2, 12)],
+    2: [(1, 13), (1, 14), (2, 13), (2, 14)],
+    3: [(3, 9), (3, 10), (4, 9), (4, 10)],
+    4: [(3, 11), (3, 12), (4, 11), (4, 12)],
+    5: [(3, 13), (3, 14), (4, 13), (4, 14)],
+    6: [(5, 9), (5, 10), (6, 9), (6, 10)],
+    7: [(5, 11), (5, 12), (6, 11), (6, 12)],
+    8: [(5, 13), (5, 14), (6, 13), (6, 14)],
 }
 
 # Delay before showing the next iteration
@@ -243,17 +245,32 @@ def visualize_lights_out_grid_to_LED(grid):
     # pixels = neopixel.NeoPixel_SPI(
     #     spi, NUM_PIXELS, pixel_order=PIXEL_ORDER, auto_write=False
     # )
+    def plotcalc(x, y, color):
+        # top row
+        x1 = x * 4 + (0 if x % 2 == 0 else 3)
+        y1 = 7 - y if x % 2 == 0 else y - 7
 
-    color = 0x800080  # Other colors: 0x7F00FF for Violet, 0xBF40BF for Bright Purple
+        # bottom row
+        x2 = 96 + (23 - x) * 4 + (0 if x % 2 == 0 else 3)
+        y2 = 3 - y if x % 2 == 0 else y - 3
+        i = x2 + y2 if y < 4 else x1 + y1
+        print(x, y, i)
+        # pixels[i] = color
 
+    on_color = 0x800080  # Other colors: 0x7F00FF for Violet, 0xBF40BF for Bright Purple
+    off_color = 0x808080
     # Iterate through each row and print as an empty or full square
     for index, square in enumerate(grid):
-        LED_array_index = LED_array_indices[index]
+        LED_array_index_list = LED_array_indices[index]
         if square == 1:
-            print("Full", LED_array_index, color)
+            for coord in LED_array_index_list:
+                print("Full", coord, on_color)
+                plotcalc(coord[0], coord[1], on_color)
             # pixels[LED_array_index] = color
         else:
-            print("Empty", LED_array_index)
+            for coord in LED_array_index_list:
+                print("Empty", coord, off_color)
+                plotcalc(coord[0], coord[1], off_color)
 
     # pixels.show()
     # Sleep so that the display doesn't change too fast

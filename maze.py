@@ -76,14 +76,14 @@ def draw_maze(maze, visited_path=None, solution=None):
 
     # Prepare for path animation
     if visited_path is not None:
-        # (line,) = ax.plot([], [], color="red", linewidth=2)
+        (line,) = ax.plot([], [], color="red", linewidth=2)
         temp = list(map(list, zip(*visited_path)))
         x, y = temp[0], temp[1]
         print("solution", solution)
         temp2 = list(map(list, zip(*solution)))
         y2, x2 = temp2[0], temp2[1]
-        # (line,) = ax.plot(y, x, "ro", markersize=12)
-        # (line2,) = ax.plot(y, x, "go", markersize=12)
+        (line,) = ax.plot(y, x, "ro", markersize=12)
+        (line2,) = ax.plot(y, x, "go", markersize=12)
         (line3,) = ax.plot([], [], color="red", linewidth=2)
 
         # update is called for each path point in the maze
@@ -117,15 +117,15 @@ def draw_maze(maze, visited_path=None, solution=None):
             return (line3,)
 
         # First animation to show BFS algorithm steps
-        # ani = animation.FuncAnimation(
-        #     fig,
-        #     update,
-        #     frames=2 * len(visited_path) + 1,
-        #     fargs=[x, y, line, line2],
-        #     blit=True,
-        #     repeat=False,
-        #     interval=250,
-        # )
+        ani = animation.FuncAnimation(
+            fig,
+            update,
+            frames=2 * len(visited_path) + 1,
+            fargs=[x, y, line, line2],
+            blit=True,
+            repeat=False,
+            interval=250,
+        )
 
         # Second animation to show the line path solution
         ani2 = animation.FuncAnimation(
@@ -140,17 +140,17 @@ def draw_maze(maze, visited_path=None, solution=None):
         )
 
     # Draw entry and exit arrows
-    # ax.arrow(1, 0, 0, 0.4, fc="green", ec="green", head_width=0.3, head_length=0.3)
-    # ax.arrow(
-    #     1,
-    #     7,
-    #     0,
-    #     0.4,
-    #     fc="blue",
-    #     ec="blue",
-    #     head_width=0.3,
-    #     head_length=0.3,
-    # )
+    ax.arrow(1, 0, 0, 0.4, fc="green", ec="green", head_width=0.3, head_length=0.3)
+    ax.arrow(
+        1,
+        7,
+        0,
+        0.4,
+        fc="blue",
+        ec="blue",
+        head_width=0.3,
+        head_length=0.3,
+    )
     plt.show()
 
 
