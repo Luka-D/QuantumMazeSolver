@@ -18,8 +18,8 @@ from qiskit_aer import AerSimulator
 from dotenv import load_dotenv
 
 # Imports for LED array
-# import board
-# import neopixel_spi as neopixel
+import board
+import neopixel_spi as neopixel
 
 
 load_dotenv()
@@ -105,8 +105,8 @@ LED_8X8_INDICES = {
 }
 
 # Neopixel constants
-# NUM_PIXELS = 192
-# PIXEL_ORDER = neopixel.RGB
+NUM_PIXELS = 192
+PIXEL_ORDER = neopixel.RGB
 
 # Colors for Neopixel are in the form GRB, so switch accordingly from the standard RGB hex codes
 WALL_COLOR = 0xFFFFFF  # White
@@ -269,15 +269,15 @@ def visualize_solution(maze, visited_coordinate_list, solution, args):
     brightness = args.brightness
 
     # Neopixel initialization
-    # spi = board.SPI()
+    spi = board.SPI()
 
-    # pixels = neopixel.NeoPixel_SPI(
-    #     spi,
-    #     NUM_PIXELS,
-    #     pixel_order=PIXEL_ORDER,
-    #     brightness=brightness,
-    #     auto_write=False,
-    # )
+    neopixel_array = neopixel.NeoPixel_SPI(
+        spi,
+        NUM_PIXELS,
+        pixel_order=PIXEL_ORDER,
+        brightness=brightness,
+        auto_write=False,
+    )
 
     # Display Initial Maze
     print(maze)
@@ -288,8 +288,8 @@ def visualize_solution(maze, visited_coordinate_list, solution, args):
             color = WALL_COLOR
         else:
             color = FLOOR_COLOR
-        # neopixel_array[LED_index] = color
-    # neopixel_array.show()
+        neopixel_array[LED_index] = color
+    neopixel_array.show()
     time.sleep(delay)
 
     # Display BSF Solution Process
@@ -299,10 +299,15 @@ def visualize_solution(maze, visited_coordinate_list, solution, args):
         index = (x * 8) + y
         print(index)
         LED_index = LED_8X8_INDICES[index]
-        # neopixel_array[LED_index] = STEP_COLOR_1
-        # neopixel_array.show()
-        # neopixel_array[LED_index] = STEP_COLOR_2
-        # neopixel_array.show()
+
+        # Display the new step in blue, then keep it on the board in red
+        neopixel_array[LED_index] = STEP_COLOR_1
+        neopixel_array.show()
+        time.sleep(delay / 2)
+
+        neopixel_array[LED_index] = STEP_COLOR_2
+        neopixel_array.show()
+        time.sleep(delay / 2)
     time.sleep(delay)
 
     # Display Maze Solution
@@ -312,8 +317,8 @@ def visualize_solution(maze, visited_coordinate_list, solution, args):
         print(index)
         LED_index = LED_8X8_INDICES[index]
         color = SOLUTION_COLOR
-        # neopixel_array[LED_index] = color
-        # neopixel_array.show()
+        neopixel_array[LED_index] = color
+        neopixel_array.show()
     time.sleep(delay)
 
     # Clear Maze
